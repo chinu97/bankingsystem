@@ -58,6 +58,11 @@ public class EmployeeController {
         return employeeService.printAccountStatement(id,accountNumber,startDate,endDate);
     }
 
+    @PutMapping("/updateInterest/")
+    public  String updateInterest(@RequestParam int id, @RequestParam int accountNumber) throws Exception {
+        return employeeService.calculateInterest(id,accountNumber);
+    }
+
 
 
 

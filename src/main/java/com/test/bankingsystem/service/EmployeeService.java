@@ -56,20 +56,13 @@ public class EmployeeService{
         return customer;
     }
     public String deleteCustomer(int id) throws Exception {
-        try {
-            if (customerRepo.findById(id)!=null){
-                customerRepo.deleteById(id);
-            }else{
-                throw new IllegalAccessException();
-            }
+       try {
+           customerRepo.deleteById(id);
+       } catch (Exception e) {
+           e.printStackTrace();
+           throw new Exception(e.getMessage());
+       }
 
-
-        }catch (IllegalAccessException ex){
-            throw new Exception(ex.getMessage());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
 
         return "Customer deleted successfully";
     }
@@ -95,9 +88,6 @@ public class EmployeeService{
         } catch (NullPointerException e) {
             e.printStackTrace();
             throw new Exception(e.getMessage());
-        } catch (Exception ex){
-            ex.printStackTrace();
-            throw new Exception(ex.getMessage());
         }
 
     }
@@ -106,23 +96,19 @@ public class EmployeeService{
         try {
             Customer customer= customerRepo.findById(customerId).orElse(null);
             List<BankAccount> bankAccounts = customer.getBankAccounts();
-            BankAccount bankAccount = null;
-            for (int i = 0;i<bankAccounts.size();i++){
-                if (bankAccounts.get(i).getAccountNumber() == accountNumber){
-                    bankAccount = bankAccounts.get(i);
-                    break;
-                }
-            }
-            if (bankAccount != null){
-                return bankAccount.getAccountBalance();
-            }else {
+            if (bankAccounts == null){
                 throw new NullPointerException();
             }
+
+            for (int i = 0;i<bankAccounts.size();i++){
+                if (bankAccounts.get(i).getAccountNumber() == accountNumber){
+                    return bankAccounts.get(i).getAccountBalance();
+
+                }
+            }
+            return -1;
         } catch (NullPointerException ex){
             throw new Exception(ex.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e.getMessage());
         }
     }
 
@@ -171,10 +157,10 @@ public class EmployeeService{
         table.addCell(Integer.toString(transaction.getId()));
         if (bankAccount == transaction.getSrcBankAccount()){
             table.addCell(Integer.toString(transaction.getDestBankAccount().getAccountNumber()));
-            table.addCell("-"+Integer.toString(transaction.getAmount()));
+            table.addCell("-"+transaction.getAmount());
         }else {
             table.addCell(Integer.toString(transaction.getSrcBankAccount().getAccountNumber()));
-            table.addCell("+"+Integer.toString(transaction.getAmount()));
+            table.addCell("+"+transaction.getAmount());
         }
 
     }
@@ -215,6 +201,24 @@ public class EmployeeService{
             e.printStackTrace();
             throw new Exception(e.getMessage());
         }
+    }
+
+
+    public String calculateInterest(int id, int accountNumber) throws Exception {
+        try {
+            BankAccount bankAccount = bankAccountRepo.findByIdAndAccountNumber(id,accountNumber);
+            int balance = bankAccount.getAccountBalance();
+            float interest = 3.5F;
+            float newBalance = (float) balance +  ((interest) * (float) balance)/100F;
+            bankAccount.setAccountBalance((int)newBalance);
+            bankAccountRepo.save(bankAccount);
+            return "Interest amount credited successfully";
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+
+
     }
 
 
